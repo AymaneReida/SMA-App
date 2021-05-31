@@ -3,6 +3,11 @@ package agents.buyer;
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
+import jade.core.behaviours.TickerBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.gui.GuiAgent;
 import jade.gui.GuiEvent;
 import jade.lang.acl.ACLMessage;
@@ -18,6 +23,27 @@ public class BookBuyerAgent extends GuiAgent {
             gui = (BookBuyerGui) this.getArguments()[0];
             gui.bookBuyerAgent = this;
         }
+
+        addBehaviour(new TickerBehaviour(this, 60000) {
+            @Override
+            protected void onTick() {
+                // Update the list of seller agents
+                DFAgentDescription template = new DFAgentDescription();
+                ServiceDescription sd = new ServiceDescription();
+                sd.setType("book-selling");
+                template.addServices(sd);
+                DFAgentDescription[] result = new DFAgentDescription[0];
+                try {
+                    result = DFService.search(myAgent, template);
+                    AID[] sellerAgents = new AID[result.length];
+                    for (int i = 0; i < result.length; ++i) {
+                        sellerAgents[i] = result[i].getName();
+                    }
+                } catch (FIPAException fe) {
+                    fe.printStackTrace();
+                }
+            }
+        });
 
         ParallelBehaviour parallelBehaviour = new ParallelBehaviour();
         addBehaviour(parallelBehaviour);

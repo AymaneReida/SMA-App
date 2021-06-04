@@ -102,13 +102,14 @@ public class ConsumerAgent extends GuiAgent {
         parallelBehaviour.addSubBehaviour(new CyclicBehaviour() {
             @Override
             public void action() {
-                MessageTemplate messageTemplate =
+                /* MessageTemplate messageTemplate =
                         MessageTemplate.and(
                                 MessageTemplate.MatchPerformative(ACLMessage.CFP),
                                 MessageTemplate.MatchLanguage("FR")
                         );
-                // ACLMessage aclMessage = receive(messageTemplate);
-                ACLMessage aclMessage = receive();
+                ACLMessage aclMessage = receive(messageTemplate); */
+                MessageTemplate messageTemplate = MessageTemplate.MatchPerformative(ACLMessage.CONFIRM);
+                ACLMessage aclMessage = receive(messageTemplate);
                 if (aclMessage != null) {
                     System.out.println("Sender : " + aclMessage.getSender().getName());
                     System.out.println("Content : " + aclMessage.getContent());
@@ -119,7 +120,13 @@ public class ConsumerAgent extends GuiAgent {
                     reply.setContent("Price = 900");
                     send(reply); */
 
-                    consumerContainer.logMessage(aclMessage);
+                    switch (aclMessage.getPerformative()) {
+                        case ACLMessage.CONFIRM:
+                            consumerContainer.logMessage(aclMessage);
+                            break;
+                        default:
+                            break;
+                    }
                 } else {
                     System.out.println("Bloc ...");
                     block();
